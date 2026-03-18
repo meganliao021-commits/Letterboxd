@@ -67,7 +67,7 @@ def main():
 
         # 2. Choose voice preset based on sentiment
         voice_preset = get_voice_preset(label)
-        st.caption(f"🎤 Voice style: {voice_preset}")
+        st.caption(f" Voice style: {voice_preset}")
 
         # 3. Generate speech using Parler‑TTS (pass voice_preset as a parameter)
         with st.spinner("Generating speech... (may take a few seconds)"):
