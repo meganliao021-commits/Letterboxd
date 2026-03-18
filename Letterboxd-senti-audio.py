@@ -71,10 +71,9 @@ def main():
 
         # 3. Generate speech using Parler‑TTS (pass voice_preset as a parameter)
        with st.spinner("Generating speech... (may take a few seconds)"):
-        audio_output = tts_model(user_review)   # 无参数
-        audio_array = audio_output["audio"]
-        sampling_rate = audio_output["sampling_rate"]
-
+            audio_output = tts_model(user_review, voice_preset=voice_preset)
+            audio_array = audio_output["audio"]
+            sampling_rate = audio_output["sampling_rate"]
 
         # 4. Play audio
         st.subheader("🔊 Listen to the review")
