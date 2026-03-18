@@ -22,7 +22,7 @@ def load_tts_model():
     """Load a TTS model that supports voice style control (Parler‑TTS)."""
     return pipeline(
         "text-to-speech",
-        model="parler-tts/parler_tts_mini_v0.1",
+        model="facebook/mms-tts-eng",
         device=0 if torch.cuda.is_available() else -1
     )
 
