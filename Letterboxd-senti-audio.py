@@ -13,7 +13,7 @@ def analyze_sentiment(review):
 
 def text2audio(text):
     """Convert text to speech."""
-    tts_pipeline = pipeline("text-to-audio", model="Matthijs/mms-tts-eng")
+    tts_pipeline = pipeline("text-to-audio", model="facebook/mms-tts-eng")
     audio_data = tts_pipeline(text)
     return audio_data
 
