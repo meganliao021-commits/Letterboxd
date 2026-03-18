@@ -1,97 +1,82 @@
+# Program: Sentiment‑Aware Movie Review TTS
+# Student names: [Your Name(s)]
 
-# --- 1. Imports ---
 import streamlit as st
 from transformers import pipeline
-import torch
 import soundfile as sf
 import io
-import numpy as np
+import torch
 
-# --- 2. Functions ---
-
+# ---------- Load models with caching ----------
 @st.cache_resource(show_spinner="Loading sentiment model...")
 def load_sentiment_model():
-    """Load the fine‑tuned RoBERTa sentiment model."""
-    model_path = "megan21/roberta-finetune-movie-reviews-sentiment-analysis"
-    # Adjust device if you have a GPU
-    device = 0 if torch.cuda.is_available() else -1
-    return pipeline("text-classification", model=model_path, tokenizer=model_path, device=device)
+    """Load your fine‑tuned RoBERTa model for movie review sentiment."""
+    return pipeline(
+        "text-classification",
+        model="megan21/roberta-finetune-movie-reviews-sentiment-analysis",
+        device=0 if torch.cuda.is_available() else -1
+    )
 
 @st.cache_resource(show_spinner="Loading TTS model...")
 def load_tts_model():
-    """Load a text‑to‑speech model that can handle emotional prompts."""
-    # Using Bark-small for expressive control; you can replace with another model
-    return pipeline("text-to-speech", model="suno/bark-small", device=0 if torch.cuda.is_available() else -1)
+    """Load a TTS model that supports voice style control (Parler‑TTS)."""
+    return pipeline(
+        "text-to-speech",
+        model="parler-tts/parler_tts_mini_v0.1",
+        device=0 if torch.cuda.is_available() else -1
+    )
 
-def analyze_sentiment(review_text, sentiment_pipe):
-    """Return the label and confidence score for the review."""
-    result = sentiment_pipe(review_text)[0]
-    return result['label'], result['score']
-
-def get_voice_prompt(sentiment_label, confidence=None):
-    """
-    Map sentiment to a descriptive voice prompt.
-    Adjust the prompts below based on your model's output labels.
-    """
-    # Check for common label formats
+# ---------- Helper: map sentiment to voice preset ----------
+def get_voice_preset(sentiment_label):
+    """Return a natural language voice description matching the sentiment."""
     if sentiment_label in ["POSITIVE", "LABEL_1", "positive"]:
         return "A cheerful female speaker with an excited, expressive tone. She speaks at a moderately fast pace with clear audio."
     else:  # NEGATIVE, LABEL_0, negative
         return "A calm male speaker with a slightly disappointed tone. He speaks slowly and quietly."
 
-def generate_speech(review_text, voice_prompt, tts_pipe):
-    """Combine prompt and review, then generate audio."""
-    full_text = voice_prompt + " " + review_text
-    audio_output = tts_pipe(full_text, forward_params={"do_sample": True})
-    return audio_output["audio"], audio_output["sampling_rate"]
-
-# --- 3. Main App ---
-
+# ---------- Main app ----------
 def main():
-    st.set_page_config(page_title="🎬 Movie Review Sentiment TTS", page_icon="🎬")
-    st.title("🎬 Movie Review Sentiment & Speech Demo")
-    st.markdown("Enter a movie review below. The app will detect its sentiment and read it aloud with an emotion‑matching voice.")
+    st.set_page_config(page_title="🎬 Sentiment‑Aware TTS", page_icon="🎬")
+    st.title("🎬 Sentiment‑Aware Movie Review TTS")
+    st.write("Enter a movie review. The app will detect its sentiment and read it aloud with a matching voice.")
 
-    # Load models (cached)
+    # Load models
     sentiment_model = load_sentiment_model()
     tts_model = load_tts_model()
 
-    # Text input
+    # Text input area
     user_review = st.text_area(
         "Your movie review:",
         height=150,
-        placeholder="e.g., This film was absolutely amazing! The cinematography was breathtaking.",
-        help="Write or paste a movie review here."
+        placeholder="e.g., This film was absolutely amazing! The cinematography was breathtaking and the acting superb."
     )
 
-    col1, col2 = st.columns([1, 5])
-    with col1:
-        run_button = st.button("🎤 Generate Speech", type="primary")
+    # Generate button – only runs when clicked
+    if st.button("🎤 Generate speech", type="primary") and user_review.strip():
+        # 1. Sentiment analysis
+        with st.spinner("Analyzing sentiment..."):
+            result = sentiment_model(user_review)[0]
+            label = result["label"]
+            score = result["score"]
 
-    if run_button and user_review.strip():
-        # Step 1: Sentiment Analysis
-        with st.status("🔍 Analyzing sentiment...", expanded=True) as status:
-            label, score = analyze_sentiment(user_review, sentiment_model)
-            status.update(label="Sentiment analysis complete!", state="complete")
-        
         # Display result
         if label in ["POSITIVE", "LABEL_1"]:
             st.metric("Sentiment", "😊 Positive", f"{score:.2%} confidence")
         else:
             st.metric("Sentiment", "😞 Negative", f"{score:.2%} confidence")
-        
-        # Step 2: Prepare voice prompt
-        voice_prompt = get_voice_prompt(label, score)
-        st.caption(f"🎤 Voice style: {voice_prompt.strip()}")
 
-        # Step 3: Generate speech
-        with st.status("🎧 Generating speech...", expanded=True) as status:
-            audio_array, sampling_rate = generate_speech(user_review, voice_prompt, tts_model)
-            status.update(label="Speech ready!", state="complete")
+        # 2. Choose voice preset based on sentiment
+        voice_preset = get_voice_preset(label)
+        st.caption(f"🎤 Voice style: {voice_preset}")
 
-        # Step 4: Play audio
+        # 3. Generate speech using Parler‑TTS (pass voice_preset as a parameter)
+        with st.spinner("Generating speech... (may take a few seconds)"):
+            audio_output = tts_model(user_review, voice_preset=voice_preset)
+            audio_array = audio_output["audio"]
+            sampling_rate = audio_output["sampling_rate"]
+
+        # 4. Play audio
         st.subheader("🔊 Listen to the review")
-        # Convert numpy array to bytes for Streamlit audio
         buffer = io.BytesIO()
         sf.write(buffer, audio_array, samplerate=sampling_rate, format="wav")
         buffer.seek(0)
@@ -105,10 +90,10 @@ def main():
             mime="audio/wav"
         )
 
-    elif run_button and not user_review.strip():
+    elif st.button("🎤 Generate speech", type="primary") and not user_review.strip():
         st.warning("Please enter a review first.")
 
-    # Example reviews (optional)
+    # Example reviews for quick testing
     with st.expander("💡 Try an example"):
         examples = [
             "An absolute masterpiece! The direction, acting, and score all come together perfectly.",
