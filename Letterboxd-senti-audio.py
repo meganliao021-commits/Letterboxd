@@ -1,8 +1,10 @@
 # Program title: Sentiment-Aware Movie Review TTS
 # Student names: [Your Name(s)]
 
+pip install -r requirements.txt
 import streamlit as st
 from transformers import pipeline
+
 
 # function part
 def analyze_sentiment(review):
