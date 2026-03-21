@@ -1,7 +1,7 @@
 # Program title: Sentiment-Aware Movie Review TTS
 # Student names: [Your Name(s)]
 
-pip install pillow --no-cache-dir
+
 import streamlit as st
 from transformers import pipeline
 
