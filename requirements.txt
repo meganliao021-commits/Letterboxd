@@ -3,6 +3,4 @@ torch
 soundfile
 scipy
 accelerate
-einops
-sentencepiece
 streamlit==1.37.0
