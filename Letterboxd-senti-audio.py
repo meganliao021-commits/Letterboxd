@@ -7,7 +7,7 @@ from transformers import pipeline
 # function part
 def analyze_sentiment(review):
     """Analyze sentiment of a movie review."""
-    sentiment_pipeline = pipeline("text-classification", model="megan21/roberta-finetune-movie-reviews-sentiment-analysis")
+    sentiment_pipeline = pipeline("text-classification", model="megan21/distilbert-base-uncased-finetuned-movie-review")
     result = sentiment_pipeline(review)[0]
     return result['label'], result['score']
 
