@@ -9,7 +9,7 @@ def analyze_sentiment(review):
     """Analyze sentiment of a movie review."""
     sentiment_pipeline = pipeline("text-classification", model="megan21/roberta-finetune-movie-reviews-sentiment-analysis")
     result = sentiment_pipeline(review)[0]
-    return result['label'], result['score']
+    return result
 
 def text2audio(text):
     """Convert text to speech."""
@@ -29,11 +29,9 @@ def main():
     if user_review:
         # Stage 1: Sentiment Analysis
         st.text("Analyzing sentiment...")
-        label, score = analyze_sentiment(user_review)
-        if label == "POSITIVE" or label == "LABEL_1":
-            st.write(f"**Sentiment:** 😊 Positive (Confidence: {score:.2%})")
-        else:
-            st.write(f"**Sentiment:** 😞 Negative (Confidence: {score:.2%})")
+        result = analyze_sentiment(user_review)
+        st.write(result)
+    
 
         # Stage 2: Text to Audio
         st.text("Generating audio...")
