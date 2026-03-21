@@ -1,6 +1,5 @@
-transformers>=4.35.0
-torch
-scipy
-pillow
 streamlit==1.37.0
-pillow==10.3.0
+torch==2.1.2 --extra-index-url https://download.pytorch.org/whl/cpu
+transformers==4.36.2
+scipy==1.11.4
+numpy==1.24.3
