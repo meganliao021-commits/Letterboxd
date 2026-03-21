@@ -1,6 +1,5 @@
 transformers>=4.35.0
 torch
-soundfile
 scipy
 accelerate
 streamlit==1.37.0
