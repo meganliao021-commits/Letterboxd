@@ -1,5 +1,5 @@
 transformers>=4.35.0
 torch
 scipy
-accelerate
+pillow
 streamlit==1.37.0
