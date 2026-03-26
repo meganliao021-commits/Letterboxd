@@ -1,5 +1,5 @@
 # Program title: Sentiment-Aware Movie Review TTS
-# Student names: [Your Name(s)]
+
 
 import streamlit as st
 from transformers import pipeline
